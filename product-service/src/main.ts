@@ -25,6 +25,7 @@ async function bootstrap() {
   });
 
   await app.startAllMicroservices(); // Start the microservice
+  app.enableCors();
   await app.listen(parseInt(process.env.REST_API_PORT, 10) || 3001); // Start the REST API
 
   console.log(

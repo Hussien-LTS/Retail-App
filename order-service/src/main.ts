@@ -23,7 +23,7 @@ async function bootstrap() {
       port: parseInt(process.env.ORDER_SERVICE_PORT, 10) || 4000,
     },
   });
-
+  app.enableCors();
   await app.startAllMicroservices(); // Start the microservice
   await app.listen(parseInt(process.env.REST_API_PORT, 10) || 4001); // Start the REST API
 

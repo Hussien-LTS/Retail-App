@@ -1,10 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { HttpService } from '@nestjs/axios';
-import { firstValueFrom } from 'rxjs';
+// import { firstValueFrom } from 'rxjs';
 import { Order } from './order.model';
 import { ConfigService } from '@nestjs/config';
-
+import axios from 'axios';
 @Injectable()
 export class OrdersService {
   constructor(
@@ -30,15 +30,20 @@ export class OrdersService {
   }
 
   async createOrder(orderData: { productId: number; quantity: number }) {
+    console.log('first');
     const productServiceUrl = this.configService.get<string>(
       'PRODUCT_SERVICE_URL',
     );
+    console.log('sec', productServiceUrl);
     const productUrl = `${productServiceUrl}/products/${orderData.productId}`;
-
+    console.log('the', productUrl);
     let product;
     try {
-      const { data } = await firstValueFrom(this.httpService.get(productUrl));
-      product = data;
+      console.log('try 1');
+
+      const response = await axios.get(productUrl);
+      product = response.data;
+      console.log('product');
     } catch (error) {
       throw new NotFoundException({
         'Product service is unavailable or product not found': error,
