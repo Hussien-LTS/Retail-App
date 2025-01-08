@@ -1,29 +1,58 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Product } from './product.model';
-import { CreateProductDto } from './dto/create-product.dto';
+import { CreateProductDto, UpdateProductDto } from './dto/product.dto';
 
 @Injectable()
 export class ProductsService {
-  constructor(@InjectModel(Product) private productModel: typeof Product) {}
+  constructor(
+    @InjectModel(Product) private readonly productModel: typeof Product,
+  ) {}
 
-  create(createProductDto: CreateProductDto): Promise<Product> {
-    return this.productModel.create({ ...createProductDto });
+  async create(createProductDto: CreateProductDto): Promise<Product> {
+    return await this.productModel.create(createProductDto as any);
   }
 
-  findAll(): Promise<Product[]> {
-    return this.productModel.findAll();
+  async findAll(): Promise<Product[]> {
+    return await this.productModel.findAll();
   }
 
-  findOne(id: number): Promise<Product> {
-    return this.productModel.findByPk(id);
+  async findOne(id: number): Promise<Product> {
+    const product = await this.productModel.findByPk(id);
+
+    if (!product) {
+      throw new NotFoundException(`Product with ID ${id} not found`);
+    }
+
+    return product;
   }
 
-  update(id: number, productData: any): Promise<[number]> {
-    return this.productModel.update(productData, { where: { id } });
+  async update(
+    id: number,
+    updateProductDto: UpdateProductDto,
+  ): Promise<Product> {
+    const product = await this.findOne(id);
+
+    await product.update(updateProductDto);
+
+    return product;
   }
 
-  delete(id: number): Promise<number> {
-    return this.productModel.destroy({ where: { id } });
+  async delete(id: number): Promise<{ deleted: boolean; message: string }> {
+    await this.findOne(id);
+
+    const deletedCount = await this.productModel.destroy({ where: { id } });
+
+    if (deletedCount === 0) {
+      return {
+        deleted: false,
+        message: `Product with ID ${id} could not be deleted`,
+      };
+    }
+
+    return {
+      deleted: true,
+      message: `Product with ID ${id} successfully deleted`,
+    };
   }
 }

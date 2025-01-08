@@ -19,4 +19,11 @@ export class Product extends Model {
     allowNull: true,
   })
   description: string;
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    defaultValue: 0,
+  })
+  quantity: number;
 }
